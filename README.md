@@ -230,7 +230,7 @@ This project is created for educational purposes as part of Semester 3 coursewor
 
 ## 🔗 Links
 - **Live Demo**: https://vr-recommender-36a16.web.app
-- **GitHub Repository**: [Your GitHub URL]
+- **GitHub Repository**: [[Your GitHub URL]](https://github.com/Soham-bot/VR_recommender/blob/main/README.md)
 
 
 ## 📞 Contact
