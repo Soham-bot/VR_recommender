@@ -220,10 +220,10 @@ npm run test:performance
 - [ ] Offline mode capability
 
 ## 👥 Team
-- **Developer**: [Your Name]
+- **Developer**: Soham Ahirrao
 - **Course**: Semester 3 Computer Science
-- **Institution**: [Your College Name]
-- **Submission Date**: [Date]
+- **Institution**: Itm skills university 
+
 
 ## 📄 License
 This project is created for educational purposes as part of Semester 3 coursework.
@@ -231,14 +231,13 @@ This project is created for educational purposes as part of Semester 3 coursewor
 ## 🔗 Links
 - **Live Demo**: https://vr-recommender-36a16.web.app
 - **GitHub Repository**: [Your GitHub URL]
-- **Documentation**: [Documentation URL]
-- **Presentation**: [Presentation URL]
+
 
 ## 📞 Contact
 For questions or feedback regarding this project:
-- **Email**: [your.email@college.edu]
-- **LinkedIn**: [Your LinkedIn Profile]
-- **GitHub**: [Your GitHub Profile]
+- **Email**: 2024.sohama@isu.ac.in
+- **LinkedIn**: www.linkedin.com/in/soham-ahirrao-9024a32b7
+- **GitHub**: (https://github.com/Soham-bot)
 
 ---
 
