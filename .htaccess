@@ -1,0 +1,10 @@
+# Redirect old main-app.html to index.html
+RewriteEngine On
+RewriteRule ^main-app\.html$ / [R=301,L]
+
+# Prevent caching of HTML files during development
+<FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+</FilesMatch>

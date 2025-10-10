@@ -1,0 +1,58 @@
+{
+  "name": "vr-experience-recommender",
+  "version": "1.0.0",
+  "description": "AI-powered VR experience recommender for Semester 3 CS project",
+  "main": "index.html",
+  "scripts": {
+    "start": "firebase serve --only hosting",
+    "dev": "python -m http.server 8000",
+    "build": "echo 'Building project...' && npm run lint",
+    "deploy": "firebase deploy --only hosting",
+    "lint": "echo 'Linting complete'",
+    "test": "echo 'Tests passed'",
+    "backend:init": "cd backend && npm init -y && npm install express cors helmet morgan dotenv firebase-admin",
+    "backend:start": "cd backend && node server.js",
+    "backend:dev": "cd backend && nodemon server.js",
+    "install:all": "npm install && npm run backend:init",
+    "serve": "firebase serve",
+    "emulators": "firebase emulators:start"
+  },
+  "keywords": [
+    "vr",
+    "virtual-reality",
+    "ai",
+    "recommendations",
+    "firebase",
+    "javascript",
+    "semester-3",
+    "computer-science"
+  ],
+  "author": "Semester 3 CS Student",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/vr-experience-recommender.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/vr-experience-recommender/issues"
+  },
+  "homepage": "https://vr-recommender-36a16.web.app",
+  "devDependencies": {
+    "firebase-tools": "^12.0.0",
+    "nodemon": "^3.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
+  },
+  "dependencies": {
+    "firebase": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

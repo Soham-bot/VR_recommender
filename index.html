@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VR Recommender | Discover Your Perfect VR Experience</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Custom CSS for colors and animations -->
+    <style>
+        :root {
+            --neon-blue: #00f5ff;
+            --neon-pink: #ff0080;
+            --neon-purple: #8b5cf6;
+            --neon-green: #00ff88;
+            --cyber-dark: #0a0a0a;
+            --cyber-gray: #1a1a2e;
+        }
+
+        .bg-cyber-dark {
+            background-color: var(--cyber-dark);
+        }
+
+        .bg-cyber-gray {
+            background-color: var(--cyber-gray);
+        }
+
+        .text-neon-blue {
+            color: var(--neon-blue);
+        }
+
+        .text-neon-pink {
+            color: var(--neon-pink);
+        }
+
+        .border-neon-blue {
+            border-color: var(--neon-blue);
+        }
+
+        @keyframes glow-pulse {
+            0% {
+                box-shadow: 0 0 5px var(--neon-blue);
+            }
+
+            100% {
+                box-shadow: 0 0 20px var(--neon-blue), 0 0 30px var(--neon-blue);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .animate-glow-pulse {
+            animation: glow-pulse 2s ease-in-out infinite alternate;
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-cyber-dark text-white overflow-x-hidden">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 z-0">
+        <div class="absolute inset-0 bg-gradient-to-br from-cyber-dark via-gray-900 to-cyber-gray"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=" 60" height="60" viewBox="0 0 60 60"
+            xmlns="http://www.w3.org/2000/svg" %3E%3Cg fill="none" fill-rule="evenodd" %3E%3Cg fill="%2300f5ff"
+            fill-opacity="0.05" %3E%3Ccircle cx="30" cy="30" r="1" /%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+        <div class="cyber-grid"></div>
+        <div class="floating-orbs"></div>
+    </div>
+
+    <!-- Initialization Status -->
+    <div id="initStatus"
+        class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-black/90 border border-neon-blue rounded-lg px-4 py-2 text-neon-blue font-rajdhani text-sm z-50">
+        <div class="flex items-center gap-2">
+            <div class="w-3 h-3 bg-neon-blue rounded-full animate-pulse"></div>
+            <span id="initStatusText">Initializing VOID.exe...</span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 min-h-screen">
+        <!-- Navigation -->
+        <nav class="cyber-nav">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-20">
+                    <!-- Logo -->
+                    <div class="flex items-center space-x-4">
+                        <div
+                            class="w-12 h-12 bg-gradient-to-r from-neon-blue to-neon-pink rounded-lg flex items-center justify-center neon-glow">
+                            <i data-lucide="zap" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <h1
+                            class="font-orbitron font-black text-2xl lg:text-3xl bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink bg-clip-text text-transparent animate-glow-pulse">
+                            VOID.exe
+                        </h1>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="index.html" class="cyber-btn cyber-btn-secondary">
+                            <i data-lucide="home" class="w-4 h-4 mr-2"></i>
+                            HOME
+                        </a>
+                        <a href="business-dashboard.html" class="cyber-btn cyber-btn-secondary">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 mr-2"></i>
+                            DASHBOARD
+                        </a>
+                        <a href="firestore-admin.html" class="cyber-btn cyber-btn-secondary">
+                            <i data-lucide="settings" class="w-4 h-4 mr-2"></i>
+                            ADMIN
+                        </a>
+                        <button id="recommendBtn" class="cyber-btn cyber-btn-secondary">
+                            <i data-lucide="brain" class="w-4 h-4 mr-2"></i>
+                            ESCAPE.AI
+                        </button>
+                        <button id="exploreBtn" class="cyber-btn cyber-btn-primary">
+                            <i data-lucide="compass" class="w-4 h-4 mr-2"></i>
+                            BROWSE
+                        </button>
+                    </div>
+
+                    <!-- User Info -->
+                    <div class="flex items-center space-x-4">
+                        <span id="userInfo" class="font-rajdhani text-neon-green font-semibold">Welcome!</span>
+                        <button id="logoutBtn" class="cyber-btn cyber-btn-danger">
+                            <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
+                            LOGOUT
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+
+
+        <!-- Recommendation Modal -->
+        <div id="recommendModal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeRecommendModal()"></div>
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="cyber-modal max-w-2xl w-full animate-slide-in">
+                    <button class="absolute top-4 right-4 text-neon-pink hover:text-white transition-colors"
+                        onclick="closeRecommendModal()">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+
+                    <!-- Preference Form -->
+                    <div id="preferenceForm">
+                        <div class="text-center mb-8">
+                            <h2
+                                class="font-orbitron font-bold text-3xl bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent mb-2">
+                                AI NEURAL ANALYSIS
+                            </h2>
+                            <p class="text-gray-400 font-rajdhani">Configure your reality escape parameters</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Age Group -->
+                            <div class="cyber-input-group">
+                                <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Age Group</label>
+                                <select id="ageGroup" class="cyber-select w-full">
+                                    <option value="">Select Age Group</option>
+                                    <option value="teen">Teen (13-17)</option>
+                                    <option value="young-adult">Young Adult (18-25)</option>
+                                    <option value="adult">Adult (26-40)</option>
+                                    <option value="mature">Mature (40+)</option>
+                                </select>
+                            </div>
+
+                            <!-- Interests -->
+                            <div class="cyber-input-group">
+                                <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Primary
+                                    Interest</label>
+                                <select id="primaryInterest" class="cyber-select w-full">
+                                    <option value="">Select Interest</option>
+                                    <option value="adventure">Adventure & Action</option>
+                                    <option value="education">Education & Learning</option>
+                                    <option value="gaming">Gaming & Competition</option>
+                                    <option value="relaxation">Relaxation & Meditation</option>
+                                    <option value="fitness">Fitness & Health</option>
+                                    <option value="creativity">Creativity & Art</option>
+                                    <option value="social">Social & Multiplayer</option>
+                                    <option value="simulation">Simulation & Training</option>
+                                </select>
+                            </div>
+
+                            <!-- VR Intensity -->
+                            <div class="cyber-input-group">
+                                <label class="block text-neon-blue font-rajdhani font-semibold mb-2">VR
+                                    Intensity</label>
+                                <select id="vrIntensity" class="cyber-select w-full">
+                                    <option value="">Select Intensity</option>
+                                    <option value="light">Light (Calm & Gentle)</option>
+                                    <option value="moderate">Moderate (Balanced)</option>
+                                    <option value="high">High (Intense & Immersive)</option>
+                                </select>
+                            </div>
+
+                            <!-- Duration -->
+                            <div class="cyber-input-group">
+                                <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Session
+                                    Duration</label>
+                                <select id="sessionDuration" class="cyber-select w-full">
+                                    <option value="">Select Duration</option>
+                                    <option value="short">Short (5-15 min)</option>
+                                    <option value="medium">Medium (15-45 min)</option>
+                                    <option value="long">Long (45+ min)</option>
+                                </select>
+                            </div>
+
+                            <!-- Experience Level -->
+                            <div class="cyber-input-group">
+                                <label class="block text-neon-blue font-rajdhani font-semibold mb-2">VR Experience
+                                    Level</label>
+                                <select id="experienceLevel" class="cyber-select w-full">
+                                    <option value="">Select Level</option>
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="expert">Expert</option>
+                                </select>
+                            </div>
+
+                            <!-- Motion Sensitivity -->
+                            <div class="cyber-input-group">
+                                <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Motion
+                                    Sensitivity</label>
+                                <select id="motionSensitivity" class="cyber-select w-full">
+                                    <option value="">Select Sensitivity</option>
+                                    <option value="low">Low (No motion sickness)</option>
+                                    <option value="medium">Medium (Some sensitivity)</option>
+                                    <option value="high">High (Very sensitive)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex gap-4">
+                            <button id="generateRecommendations" class="cyber-btn cyber-btn-primary flex-1">
+                                <i data-lucide="brain" class="w-4 h-4 mr-2"></i>
+                                CALCULATE ESCAPE ROUTES
+                            </button>
+                            <button onclick="closeRecommendModal()" class="cyber-btn cyber-btn-secondary">
+                                <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+                                CANCEL
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations Display -->
+                    <div id="recommendationsDisplay" class="hidden">
+                        <div class="text-center mb-8">
+                            <h2
+                                class="font-orbitron font-bold text-3xl bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent mb-2">
+                                NEURAL MATCH RESULTS
+                            </h2>
+                            <p class="text-gray-400 font-rajdhani">AI-curated escapes tailored to your digital needs</p>
+                        </div>
+
+                        <div id="recommendationsList" class="space-y-4 max-h-96 overflow-y-auto"></div>
+
+                        <div class="mt-6 flex gap-4">
+                            <button id="backToPreferences" class="cyber-btn cyber-btn-secondary">
+                                <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                                MODIFY PREFERENCES
+                            </button>
+                            <button onclick="closeRecommendModal()" class="cyber-btn cyber-btn-primary flex-1">
+                                <i data-lucide="check" class="w-4 h-4 mr-2"></i>
+                                INITIATE ESCAPE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Hero Section -->
+            <section class="text-center mb-16">
+                <h1 class="font-orbitron font-black text-4xl md:text-6xl lg:text-7xl mb-6 animate-fade-in">
+                    <span
+                        class="bg-gradient-to-r from-neon-blue via-neon-purple to-neon-pink bg-clip-text text-transparent animate-neon-flicker">
+                        REALITY
+                    </span>
+                    <br>
+                    <span class="text-white">ESCAPE PROTOCOL</span>
+                </h1>
+                <p class="font-rajdhani text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                    Because reality is overrated. Find your perfect digital escape route.
+                </p>
+            </section>
+
+            <!-- Search Section -->
+            <section class="mb-12" id="exploreSection">
+                <div class="cyber-panel p-8">
+                    <div class="flex flex-col lg:flex-row gap-6 items-center">
+                        <!-- Search Input -->
+                        <div class="flex-1 w-full">
+                            <div class="cyber-search-container">
+                                <i data-lucide="search" class="cyber-search-icon"></i>
+                                <input type="text" id="searchInput" placeholder="Search escape routes..."
+                                    class="cyber-search-input">
+                                <button id="searchBtn" class="cyber-search-btn">
+                                    <i data-lucide="zap" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="flex gap-4 w-full lg:w-auto">
+                            <select id="categoryFilter" class="cyber-select">
+                                <option value="">All Escapes</option>
+                                <option value="gaming">Gaming</option>
+                                <option value="education">Education</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="fitness">Fitness</option>
+                                <option value="simulation">Simulation</option>
+                            </select>
+                            <select id="ratingFilter" class="cyber-select">
+                                <option value="">All Ratings</option>
+                                <option value="4">4+ Stars</option>
+                                <option value="3">3+ Stars</option>
+                                <option value="2">2+ Stars</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section>
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="hidden text-center py-16">
+                    <div class="cyber-loader"></div>
+                    <p class="font-orbitron text-neon-blue mt-4 animate-pulse">SCANNING ESCAPE ROUTES...</p>
+                </div>
+
+                <!-- VR Experiences Grid -->
+                <div id="vrExperiences" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+
+                <!-- No Results -->
+                <div id="noResults" class="hidden text-center py-16">
+                    <div
+                        class="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-neon-pink to-neon-purple rounded-full flex items-center justify-center opacity-50">
+                        <i data-lucide="search-x" class="w-12 h-12 text-white"></i>
+                    </div>
+                    <h3 class="font-orbitron text-2xl text-neon-pink mb-2">NO ESCAPES FOUND</h3>
+                    <p class="text-gray-400 font-rajdhani">Reality still has you trapped. Try different parameters.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Initialize Firebase and other core services -->
+    <script src="JS/config.js"></script>
+
+    <!-- Optional Authentication -->
+    <script>
+        // Optional authentication - app works without sign-in
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Wait for Firebase to initialize
+            let attempts = 0;
+            while (!window.auth && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+
+            if (window.auth) {
+                window.auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        // User authenticated, update UI
+                        const userInfo = document.getElementById('userInfo');
+                        if (userInfo) {
+                            userInfo.textContent = `Welcome, ${user.displayName || user.email}!`;
+                        }
+
+                        // Set up logout functionality
+                        const logoutBtn = document.getElementById('logoutBtn');
+                        if (logoutBtn) {
+                            logoutBtn.addEventListener('click', async () => {
+                                try {
+                                    await window.auth.signOut();
+                                    // Reload the page
+                                    window.location.reload();
+                                } catch (error) {
+                                    console.error('Logout error:', error);
+                                }
+                            });
+                        }
+                    } else {
+                        // User not authenticated - show guest mode
+                        const userInfo = document.getElementById('userInfo');
+                        if (userInfo) {
+                            userInfo.textContent = 'Guest Mode - Sign in for personalized features';
+                        }
+                    }
+                });
+            } else {
+                // Firebase not available - show guest mode
+                const userInfo = document.getElementById('userInfo');
+                if (userInfo) {
+                    userInfo.textContent = 'Guest Mode - Browse VR experiences';
+                }
+            }
+        });
+    </script>
+    <script src="JS/email-validation.js"></script>
+    <script src="JS/database.js"></script>
+    <script src="JS/search.js"></script>
+    <script src="JS/bst-recommender.js"></script>
+    <script src="JS/auth.js"></script>
+    <script src="JS/app.js"></script>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+        
+        // Modal functions
+
+        function closeRecommendModal() {
+            document.getElementById('recommendModal').classList.add('hidden');
+        }
+
+        // Initialize floating orbs
+        function createFloatingOrbs() {
+            const container = document.querySelector('.floating-orbs');
+            for (let i = 0; i < 6; i++) {
+                const orb = document.createElement('div');
+                orb.className = 'floating-orb';
+                orb.style.left = Math.random() * 100 + '%';
+                orb.style.animationDelay = Math.random() * 10 + 's';
+                orb.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                container.appendChild(orb);
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            createFloatingOrbs();
+            lucide.createIcons();
+        });
+    </script>
+
+    <!-- Debug Panel (Hidden by default) -->
+    <div id="debugPanel"
+        class="fixed bottom-4 right-4 bg-black/90 border border-neon-blue rounded-lg p-4 text-xs font-mono text-neon-green hidden z-50">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-neon-blue font-bold">DEBUG PANEL</span>
+            <button onclick="toggleDebugPanel()" class="text-neon-pink hover:text-white">×</button>
+        </div>
+        <div id="debugContent">
+            <button onclick="window.checkAuthState()" class="cyber-btn cyber-btn-primary text-xs mb-1 w-full">Check
+                Auth</button>
+            <button onclick="window.debugAuth()" class="cyber-btn cyber-btn-secondary text-xs mb-1 w-full">Debug
+                UI</button>
+            <button onclick="window.manualGoogleSignIn()" class="cyber-btn cyber-btn-primary text-xs mb-1 w-full">Manual
+                Google</button>
+            <button onclick="window.authManager.refreshUI()"
+                class="cyber-btn cyber-btn-secondary text-xs w-full">Refresh UI</button>
+        </div>
+    </div>
+
+    <!-- Debug Toggle Button -->
+    <button id="debugToggle" onclick="toggleDebugPanel()"
+        class="fixed bottom-4 left-4 w-8 h-8 bg-neon-blue/20 border border-neon-blue rounded-full flex items-center justify-center text-neon-blue hover:bg-neon-blue/40 transition-all z-50">
+        <span class="text-xs font-bold">D</span>
+    </button>
+
+    <!-- App Scripts -->
+    <script>
+        // Debug script loading
+        console.log('Scripts loaded. Checking availability:');
+        console.log('Firebase:', typeof firebase);
+        console.log('Auth Manager:', typeof window.authManager);
+        console.log('Database Manager:', typeof window.databaseManager);
+        console.log('Search Manager:', typeof window.searchManager);
+        console.log('VR Recommendation Engine:', typeof window.vrRecommendationEngine);
+
+        // Check for critical dependencies
+        function checkDependencies() {
+            const dependencies = {
+                'Firebase': typeof firebase !== 'undefined',
+                'Firebase Auth': typeof firebase !== 'undefined' && firebase.auth,
+                'Firebase Firestore': typeof firebase !== 'undefined' && firebase.firestore,
+                'Auth Manager': typeof window.authManager !== 'undefined',
+                'Database Manager': typeof window.databaseManager !== 'undefined',
+                'Search Manager': typeof window.searchManager !== 'undefined',
+                'Email Validator': typeof window.emailValidator !== 'undefined',
+                'VR Platform Integration': typeof window.vrPlatformIntegration !== 'undefined',
+                'Real VR API': typeof window.realVRAPI !== 'undefined'
+            };
+
+            console.log('=== DEPENDENCY CHECK ===');
+            let allLoaded = true;
+            for (const [name, loaded] of Object.entries(dependencies)) {
+                console.log(`${name}: ${loaded ? '✅' : '❌'}`);
+                if (!loaded) allLoaded = false;
+            }
+            console.log('All dependencies loaded:', allLoaded ? '✅' : '❌');
+            console.log('========================');
+
+            return allLoaded;
+        }
+
+        // Run dependency check after a short delay
+        setTimeout(checkDependencies, 1000);
+
+        // Debug panel functions
+        function toggleDebugPanel() {
+            const panel = document.getElementById('debugPanel');
+            const toggle = document.getElementById('debugToggle');
+
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                toggle.style.opacity = '0.5';
+            } else {
+                panel.classList.add('hidden');
+                toggle.style.opacity = '1';
+            }
+        }
+
+        // Auto-check auth state on load
+        setTimeout(() => {
+            if (window.checkAuthState) {
+                console.log('Auto-checking auth state...');
+                window.checkAuthState();
+            }
+
+            // Also check for redirect result manually
+            if (window.authManager && window.authManager.handleRedirectResult) {
+                console.log('Manually checking for redirect result...');
+                window.authManager.handleRedirectResult().then(handled => {
+                    if (handled) {
+                        console.log('Redirect result handled successfully');
+                    }
+                });
+            }
+        }, 2000);
+    </script>
+</body>
+
+</html>

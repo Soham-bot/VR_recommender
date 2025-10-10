@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Admin - VR Experiences Manager</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'orbitron': ['Orbitron', 'monospace'],
+                        'rajdhani': ['Rajdhani', 'sans-serif'],
+                    },
+                    colors: {
+                        'neon-blue': '#00f5ff',
+                        'neon-pink': '#ff0080',
+                        'neon-purple': '#8b5cf6',
+                        'neon-green': '#00ff88',
+                        'cyber-dark': '#0a0a0a',
+                        'cyber-gray': '#1a1a2e',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-cyber-dark text-white min-h-screen">
+    <!-- Admin Access Control -->
+    <div id="adminAccessControl" class="fixed inset-0 bg-cyber-dark flex items-center justify-center z-50">
+        <div class="cyber-panel p-8 text-center max-w-md">
+            <div class="w-16 h-16 bg-gradient-to-r from-neon-blue to-neon-pink rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
+            </div>
+            <h2 class="font-orbitron font-bold text-xl text-neon-blue mb-4">Admin Access Required</h2>
+            <p class="text-gray-300 mb-6">Please sign in with an authorized admin account to access this panel.</p>
+            <div class="space-y-3">
+                <button id="adminSignInBtn" class="cyber-btn cyber-btn-primary w-full">
+                    <i data-lucide="log-in" class="w-4 h-4 mr-2"></i>
+                    Sign In as Admin
+                </button>
+                <a href="index.html" class="cyber-btn cyber-btn-secondary w-full">
+                    <i data-lucide="home" class="w-4 h-4 mr-2"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-cyber-gray to-cyber-dark border-b border-neon-blue/30 p-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div
+                    class="w-10 h-10 bg-gradient-to-r from-neon-blue to-neon-pink rounded-lg flex items-center justify-center">
+                    <i data-lucide="database" class="w-6 h-6 text-white"></i>
+                </div>
+                <h1
+                    class="font-orbitron font-bold text-2xl bg-gradient-to-r from-neon-blue to-neon-pink bg-clip-text text-transparent">
+                    Firestore Admin
+                </h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="index.html" class="cyber-btn cyber-btn-secondary">
+                    <i data-lucide="home" class="w-4 h-4 mr-2"></i>
+                    Home
+                </a>
+                <a href="index.html" class="cyber-btn cyber-btn-secondary">
+                    <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                    VR App
+                </a>
+                <button id="adminSignOutBtn" class="cyber-btn cyber-btn-danger">
+                    <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto p-6">
+        <!-- Status Panel -->
+        <div class="cyber-panel p-6 mb-6">
+            <h2 class="font-orbitron font-bold text-xl text-neon-blue mb-4">Database Status</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-cyber-gray/50 rounded-lg p-4 border border-neon-green/30">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300 font-rajdhani">Total Experiences</span>
+                        <span id="totalCount" class="text-neon-green font-orbitron font-bold text-xl">0</span>
+                    </div>
+                </div>
+                <div class="bg-cyber-gray/50 rounded-lg p-4 border border-neon-blue/30">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300 font-rajdhani">Connection Status</span>
+                        <span id="connectionStatus" class="text-neon-blue font-rajdhani font-bold">Connecting...</span>
+                    </div>
+                </div>
+                <div class="bg-cyber-gray/50 rounded-lg p-4 border border-neon-pink/30">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300 font-rajdhani">Last Updated</span>
+                        <span id="lastUpdated" class="text-neon-pink font-rajdhani font-bold">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Data Generator -->
+        <div class="cyber-panel p-6 mb-6">
+            <h2 class="font-orbitron font-bold text-xl text-neon-purple mb-4">Sample Data Generator</h2>
+            <div class="bg-cyber-gray/30 rounded-lg p-4 border border-neon-purple/30">
+                <p class="text-gray-300 font-rajdhani mb-4">
+                    Generate sample VR experiences to populate your database for testing and development.
+                </p>
+                <div class="flex flex-wrap gap-3">
+                    <button id="generateSampleBtn" class="cyber-btn cyber-btn-primary">
+                        <i data-lucide="zap" class="w-4 h-4 mr-2"></i>
+                        Generate 10 Samples
+                    </button>
+                    <button id="generateGamingBtn" class="cyber-btn cyber-btn-secondary">
+                        <i data-lucide="gamepad-2" class="w-4 h-4 mr-2"></i>
+                        Gaming (5)
+                    </button>
+                    <button id="generateEducationBtn" class="cyber-btn cyber-btn-secondary">
+                        <i data-lucide="graduation-cap" class="w-4 h-4 mr-2"></i>
+                        Education (5)
+                    </button>
+                    <button id="generateFitnessBtn" class="cyber-btn cyber-btn-secondary">
+                        <i data-lucide="dumbbell" class="w-4 h-4 mr-2"></i>
+                        Fitness (3)
+                    </button>
+                    <button id="clearAllBtn" class="cyber-btn cyber-btn-danger">
+                        <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                        Clear All Data
+                    </button>
+                </div>
+                <div id="generationProgress" class="mt-4 hidden">
+                    <div class="bg-cyber-gray rounded-full h-2 mb-2">
+                        <div id="progressBar"
+                            class="bg-gradient-to-r from-neon-blue to-neon-purple h-2 rounded-full transition-all duration-300"
+                            style="width: 0%"></div>
+                    </div>
+                    <p id="progressText" class="text-sm text-gray-400 font-rajdhani">Generating sample data...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Experience -->
+        <div class="cyber-panel p-6 mb-6">
+            <h2 class="font-orbitron font-bold text-xl text-neon-blue mb-4">Add New VR Experience</h2>
+            <form id="addExperienceForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="cyber-input-group">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Title *</label>
+                    <input type="text" id="title" class="cyber-input w-full" placeholder="VR Experience Title" required>
+                </div>
+
+                <div class="cyber-input-group">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Category *</label>
+                    <select id="category" class="cyber-select w-full" required>
+                        <option value="">Select Category</option>
+                        <option value="gaming">Gaming</option>
+                        <option value="education">Education</option>
+                        <option value="fitness">Fitness</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="simulation">Simulation</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="relaxation">Relaxation</option>
+                        <option value="creativity">Creativity</option>
+                    </select>
+                </div>
+
+                <div class="cyber-input-group md:col-span-2">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Description *</label>
+                    <textarea id="description" class="cyber-input w-full h-24"
+                        placeholder="Detailed description of the VR experience" required></textarea>
+                </div>
+
+                <div class="cyber-input-group">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Rating (1-5)</label>
+                    <input type="number" id="rating" class="cyber-input w-full" min="1" max="5" step="0.1"
+                        placeholder="4.5">
+                </div>
+
+                <div class="cyber-input-group">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Price ($)</label>
+                    <input type="number" id="price" class="cyber-input w-full" min="0" step="0.01" placeholder="29.99">
+                </div>
+
+                <div class="cyber-input-group">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Platform</label>
+                    <input type="text" id="platform" class="cyber-input w-full"
+                        placeholder="Oculus Quest, Steam VR, PSVR">
+                </div>
+
+                <div class="cyber-input-group">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Official URL</label>
+                    <input type="url" id="officialUrl" class="cyber-input w-full"
+                        placeholder="https://store.steampowered.com/...">
+                </div>
+
+                <div class="cyber-input-group">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Image URL</label>
+                    <input type="url" id="imageUrl" class="cyber-input w-full"
+                        placeholder="https://images.unsplash.com/...">
+                </div>
+
+                <div class="cyber-input-group">
+                    <label class="block text-neon-blue font-rajdhani font-semibold mb-2">Tags (comma-separated)</label>
+                    <input type="text" id="tags" class="cyber-input w-full"
+                        placeholder="action, adventure, multiplayer">
+                </div>
+
+                <div class="cyber-input-group md:col-span-2 flex gap-4">
+                    <button type="submit" class="cyber-btn cyber-btn-primary flex-1">
+                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                        Add Experience
+                    </button>
+                    <button type="reset" class="cyber-btn cyber-btn-secondary">
+                        <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+                        Clear
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Existing Experiences -->
+        <div class="cyber-panel p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-orbitron font-bold text-xl text-neon-blue">Existing VR Experiences</h2>
+                <button id="refreshBtn" class="cyber-btn cyber-btn-secondary">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                    Refresh
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-8">
+                <div class="cyber-loader mx-auto mb-4"></div>
+                <p class="text-gray-400 font-rajdhani">Loading VR experiences...</p>
+            </div>
+
+            <!-- Experiences List -->
+            <div id="experiencesList" class="space-y-4 hidden">
+                <!-- Experiences will be populated here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-8 hidden">
+                <div
+                    class="w-16 h-16 bg-gradient-to-r from-neon-pink to-neon-purple rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="database" class="w-8 h-8 text-white"></i>
+                </div>
+                <h3 class="font-orbitron text-xl text-neon-pink mb-2">No VR Experiences Found</h3>
+                <p class="text-gray-400 font-rajdhani">Add your first VR experience using the form above.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Core Scripts -->
+    <script src="JS/config.js"></script>
+
+    <!-- Admin Access Control Script -->
+    <script>
+        // Admin Access Control
+        class AdminAccessControl {
+            constructor() {
+                this.adminEmails = [
+                    'sohamrao2006@gmail.com',  // Your official email
+                    'admin@vrrecommender.com', // Add other admin emails as needed
+                ];
+                this.init();
+            }
+
+            async init() {
+                console.log('Initializing Admin Access Control...');
+                
+                // Wait for Firebase to initialize
+                await this.waitForFirebase();
+                
+                // Check authentication
+                this.checkAdminAccess();
+                
+                // Set up event listeners
+                this.setupEventListeners();
+            }
+
+            async waitForFirebase() {
+                let attempts = 0;
+                while ((!window.db || !window.auth) && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+
+                if (!window.auth) {
+                    console.error('Firebase Auth not initialized');
+                    this.showAccessDenied();
+                    return;
+                }
+            }
+
+            checkAdminAccess() {
+                if (window.auth) {
+                    window.auth.onAuthStateChanged((user) => {
+                        if (user && this.isAdminUser(user.email)) {
+                            this.grantAccess();
+                        } else {
+                            this.showAccessDenied();
+                        }
+                    });
+                } else {
+                    this.showAccessDenied();
+                }
+            }
+
+            isAdminUser(email) {
+                return this.adminEmails.includes(email);
+            }
+
+            grantAccess() {
+                const accessControl = document.getElementById('adminAccessControl');
+                if (accessControl) {
+                    accessControl.style.display = 'none';
+                }
+                console.log('Admin access granted');
+            }
+
+            showAccessDenied() {
+                const accessControl = document.getElementById('adminAccessControl');
+                if (accessControl) {
+                    accessControl.style.display = 'flex';
+                }
+            }
+
+            setupEventListeners() {
+                // Admin sign in button
+                const adminSignInBtn = document.getElementById('adminSignInBtn');
+                if (adminSignInBtn) {
+                    adminSignInBtn.addEventListener('click', () => this.handleAdminSignIn());
+                }
+
+                // Admin sign out button
+                const adminSignOutBtn = document.getElementById('adminSignOutBtn');
+                if (adminSignOutBtn) {
+                    adminSignOutBtn.addEventListener('click', () => this.handleSignOut());
+                }
+            }
+
+            async handleAdminSignIn() {
+                try {
+                    if (!window.auth) {
+                        throw new Error('Firebase Auth not available');
+                    }
+
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    provider.addScope('email');
+                    provider.addScope('profile');
+
+                    const result = await window.auth.signInWithPopup(provider);
+                    const user = result.user;
+
+                    if (this.isAdminUser(user.email)) {
+                        console.log('Admin signed in:', user.email);
+                        this.grantAccess();
+                    } else {
+                        await window.auth.signOut();
+                        alert('Access denied. You do not have admin privileges.');
+                    }
+                } catch (error) {
+                    console.error('Admin sign in error:', error);
+                    alert('Sign in failed. Please try again.');
+                }
+            }
+
+            async handleSignOut() {
+                try {
+                    if (window.auth) {
+                        await window.auth.signOut();
+                        window.location.href = 'index.html';
+                    }
+                } catch (error) {
+                    console.error('Sign out error:', error);
+                }
+            }
+        }
+
+        // Initialize admin access control when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.adminAccessControl = new AdminAccessControl();
+        });
+    </script>
+
+    <script>
+        // Firestore Admin Manager
+        class FirestoreAdmin {
+            constructor() {
+                this.experiences = [];
+                this.init();
+            }
+
+            async init() {
+                console.log('Initializing Firestore Admin...');
+
+                // Wait for Firebase to initialize
+                await this.waitForFirebase();
+
+                // Set up event listeners
+                this.setupEventListeners();
+
+                // Load existing experiences
+                await this.loadExperiences();
+
+                // Update status
+                this.updateStatus();
+
+                console.log('Firestore Admin initialized successfully');
+            }
+
+            async waitForFirebase() {
+                let attempts = 0;
+                while ((!window.db || !window.auth) && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+
+                if (!window.db) {
+                    throw new Error('Firebase not initialized');
+                }
+            }
+
+            setupEventListeners() {
+                // Add experience form
+                document.getElementById('addExperienceForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addExperience();
+                });
+
+                // Refresh button
+                document.getElementById('refreshBtn').addEventListener('click', () => {
+                    this.loadExperiences();
+                });
+
+                // Sample data generators
+                document.getElementById('generateSampleBtn').addEventListener('click', () => {
+                    this.generateSampleData();
+                });
+
+                document.getElementById('generateGamingBtn').addEventListener('click', () => {
+                    this.generateCategoryData('gaming', 5);
+                });
+
+                document.getElementById('generateEducationBtn').addEventListener('click', () => {
+                    this.generateCategoryData('education', 5);
+                });
+
+                document.getElementById('generateFitnessBtn').addEventListener('click', () => {
+                    this.generateCategoryData('fitness', 3);
+                });
+
+                document.getElementById('clearAllBtn').addEventListener('click', () => {
+                    this.clearAllData();
+                });
+            }
+
+            async addExperience() {
+                try {
+                    const formData = {
+                        title: document.getElementById('title').value,
+                        description: document.getElementById('description').value,
+                        category: document.getElementById('category').value,
+                        rating: parseFloat(document.getElementById('rating').value) || 4.0,
+                        price: parseFloat(document.getElementById('price').value) || 0,
+                        platform: document.getElementById('platform').value || 'VR Headset',
+                        officialUrl: document.getElementById('officialUrl').value || '',
+                        imageUrl: document.getElementById('imageUrl').value || 'https://images.unsplash.com/photo-1592478411213-6153e4ebc696?w=400&h=225&fit=crop',
+                        tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    // Validate required fields
+                    if (!formData.title || !formData.description || !formData.category) {
+                        this.showNotification('Please fill in all required fields', 'error');
+                        return;
+                    }
+
+                    // Add to Firestore
+                    const docRef = await db.collection('vrExperiences').add(formData);
+                    console.log('Experience added with ID:', docRef.id);
+
+                    // Reset form
+                    document.getElementById('addExperienceForm').reset();
+
+                    // Reload experiences
+                    await this.loadExperiences();
+
+                    this.showNotification('VR Experience added successfully!', 'success');
+
+                } catch (error) {
+                    console.error('Error adding experience:', error);
+                    this.showNotification('Error adding experience: ' + error.message, 'error');
+                }
+            }
+
+            async loadExperiences() {
+                try {
+                    document.getElementById('loadingState').classList.remove('hidden');
+                    document.getElementById('experiencesList').classList.add('hidden');
+                    document.getElementById('emptyState').classList.add('hidden');
+
+                    const snapshot = await db.collection('vrExperiences').orderBy('createdAt', 'desc').get();
+                    this.experiences = [];
+
+                    snapshot.forEach((doc) => {
+                        this.experiences.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+
+                    this.displayExperiences();
+                    this.updateStatus();
+
+                } catch (error) {
+                    console.error('Error loading experiences:', error);
+                    this.showNotification('Error loading experiences: ' + error.message, 'error');
+                }
+            }
+
+            displayExperiences() {
+                const container = document.getElementById('experiencesList');
+                const loadingState = document.getElementById('loadingState');
+                const emptyState = document.getElementById('emptyState');
+
+                loadingState.classList.add('hidden');
+
+                if (this.experiences.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    container.classList.add('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                container.classList.remove('hidden');
+
+                container.innerHTML = this.experiences.map(exp => this.createExperienceCard(exp)).join('');
+
+                // Re-initialize Lucide icons
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }
+
+            createExperienceCard(experience) {
+                const createdAt = experience.createdAt ? new Date(experience.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown';
+
+                return `
+                    <div class="bg-cyber-gray/30 rounded-lg border border-neon-blue/20 p-4 hover:border-neon-blue/50 transition-all">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <h3 class="font-orbitron font-bold text-lg text-white mb-1">${experience.title}</h3>
+                                <p class="text-gray-400 font-rajdhani text-sm mb-2">${experience.description}</p>
+                                <div class="flex items-center gap-4 text-sm">
+                                    <span class="px-2 py-1 bg-neon-blue/20 text-neon-blue rounded-full font-rajdhani font-semibold">${experience.category}</span>
+                                    <span class="text-neon-green font-rajdhani">★ ${experience.rating || 'N/A'}</span>
+                                    <span class="text-neon-pink font-rajdhani">${experience.price === 0 ? 'FREE' : '$' + experience.price}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 ml-4">
+                                <button onclick="firestoreAdmin.editExperience('${experience.id}')" class="cyber-btn cyber-btn-secondary text-xs">
+                                    <i data-lucide="edit" class="w-3 h-3 mr-1"></i>
+                                    Edit
+                                </button>
+                                <button onclick="firestoreAdmin.deleteExperience('${experience.id}')" class="cyber-btn cyber-btn-danger text-xs">
+                                    <i data-lucide="trash-2" class="w-3 h-3 mr-1"></i>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 font-rajdhani">
+                            ID: ${experience.id} | Created: ${createdAt}
+                            ${experience.platform ? ` | Platform: ${experience.platform}` : ''}
+                            ${experience.officialUrl ? ` | <a href="${experience.officialUrl}" target="_blank" class="text-neon-blue hover:underline">Official Site</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            async deleteExperience(id) {
+                if (!confirm('Are you sure you want to delete this VR experience?')) {
+                    return;
+                }
+
+                try {
+                    await db.collection('vrExperiences').doc(id).delete();
+                    await this.loadExperiences();
+                    this.showNotification('Experience deleted successfully', 'success');
+                } catch (error) {
+                    console.error('Error deleting experience:', error);
+                    this.showNotification('Error deleting experience: ' + error.message, 'error');
+                }
+            }
+
+            editExperience(id) {
+                const experience = this.experiences.find(exp => exp.id === id);
+                if (!experience) return;
+
+                // Populate form with existing data
+                document.getElementById('title').value = experience.title || '';
+                document.getElementById('description').value = experience.description || '';
+                document.getElementById('category').value = experience.category || '';
+                document.getElementById('rating').value = experience.rating || '';
+                document.getElementById('price').value = experience.price || '';
+                document.getElementById('platform').value = experience.platform || '';
+                document.getElementById('officialUrl').value = experience.officialUrl || '';
+                document.getElementById('imageUrl').value = experience.imageUrl || '';
+                document.getElementById('tags').value = experience.tags ? experience.tags.join(', ') : '';
+
+                // Scroll to form
+                document.getElementById('addExperienceForm').scrollIntoView({ behavior: 'smooth' });
+
+                // Change form to edit mode
+                const submitBtn = document.querySelector('#addExperienceForm button[type="submit"]');
+                submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4 mr-2"></i>Update Experience';
+                submitBtn.onclick = (e) => {
+                    e.preventDefault();
+                    this.updateExperience(id);
+                };
+            }
+
+            async updateExperience(id) {
+                try {
+                    const formData = {
+                        title: document.getElementById('title').value,
+                        description: document.getElementById('description').value,
+                        category: document.getElementById('category').value,
+                        rating: parseFloat(document.getElementById('rating').value) || 4.0,
+                        price: parseFloat(document.getElementById('price').value) || 0,
+                        platform: document.getElementById('platform').value || 'VR Headset',
+                        officialUrl: document.getElementById('officialUrl').value || '',
+                        imageUrl: document.getElementById('imageUrl').value || 'https://images.unsplash.com/photo-1592478411213-6153e4ebc696?w=400&h=225&fit=crop',
+                        tags: document.getElementById('tags').value.split(',').map(tag => tag.trim()).filter(tag => tag),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    await db.collection('vrExperiences').doc(id).update(formData);
+
+                    // Reset form
+                    document.getElementById('addExperienceForm').reset();
+                    const submitBtn = document.querySelector('#addExperienceForm button[type="submit"]');
+                    submitBtn.innerHTML = '<i data-lucide="plus" class="w-4 h-4 mr-2"></i>Add Experience';
+                    submitBtn.onclick = null;
+
+                    await this.loadExperiences();
+                    this.showNotification('Experience updated successfully!', 'success');
+
+                } catch (error) {
+                    console.error('Error updating experience:', error);
+                    this.showNotification('Error updating experience: ' + error.message, 'error');
+                }
+            }
+
+            updateStatus() {
+                document.getElementById('totalCount').textContent = this.experiences.length;
+                document.getElementById('connectionStatus').textContent = 'Connected';
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+            }
+
+            getSampleData() {
+                return {
+                    gaming: [
+                        {
+                            title: "Half-Life: Alyx",
+                            description: "Valve's return to the Half-Life series brings the world to life in an immersive VR experience that's not to be missed.",
+                            category: "gaming",
+                            rating: 4.9,
+                            price: 59.99,
+                            platform: "Steam VR, Oculus Rift, Valve Index",
+                            officialUrl: "https://store.steampowered.com/app/546560/HalfLife_Alyx/",
+                            videoUrl: "https://www.youtube.com/watch?v=O2W0N3uKXmo",
+                            imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=225&fit=crop",
+                            tags: ["action", "adventure", "sci-fi", "story-driven"]
+                        },
+                        {
+                            title: "Beat Saber",
+                            description: "Slash the beats of adrenaline-pumping music as they fly towards you, surrounded by a futuristic world.",
+                            category: "gaming",
+                            rating: 4.8,
+                            price: 29.99,
+                            platform: "Oculus Quest, Steam VR, PSVR",
+                            officialUrl: "https://www.oculus.com/experiences/quest/2448060205267927/",
+                            videoUrl: "https://www.youtube.com/watch?v=gV1sw4lfwFw",
+                            imageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=225&fit=crop",
+                            tags: ["rhythm", "music", "fitness", "arcade"]
+                        },
+                        {
+                            title: "Superhot VR",
+                            description: "Time moves only when you move. No regenerating health bars. No conveniently placed ammo drops. It's just you, outnumbered and outgunned.",
+                            category: "gaming",
+                            rating: 4.7,
+                            price: 24.99,
+                            platform: "All VR Platforms",
+                            officialUrl: "https://store.steampowered.com/app/617830/SUPERHOT_VR/",
+                            videoUrl: "https://www.youtube.com/watch?v=A1jothqmqHw",
+                            imageUrl: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=225&fit=crop",
+                            tags: ["action", "strategy", "time-manipulation", "innovative"]
+                        },
+                        {
+                            title: "The Walking Dead: Saints & Sinners",
+                            description: "A game unlike any in The Walking Dead universe. Every challenge you face and decision you make is driven by YOU.",
+                            category: "gaming",
+                            rating: 4.6,
+                            price: 39.99,
+                            platform: "Oculus Quest, Steam VR, PSVR",
+                            officialUrl: "https://www.oculus.com/experiences/quest/2897337400373711/",
+                            videoUrl: "https://www.youtube.com/watch?v=VtKxqfZlUaE",
+                            imageUrl: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=400&h=225&fit=crop",
+                            tags: ["horror", "survival", "zombies", "story-driven"]
+                        },
+                        {
+                            title: "VR Chat",
+                            description: "Join thousands of players in a collection of social VR experiences such as chat rooms, games, and interactive experiences.",
+                            category: "gaming",
+                            rating: 4.2,
+                            price: 0,
+                            platform: "Steam VR, Oculus Quest",
+                            officialUrl: "",
+                            videoUrl: "https://www.youtube.com/watch?v=7daTgyVZ60I",
+                            imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=225&fit=crop",
+                            tags: ["social", "multiplayer", "creative", "free"]
+                        }
+                    ],
+                    education: [
+                        {
+                            title: "Google Earth VR",
+                            description: "Explore the world from totally new perspectives. Stroll the streets of Tokyo, soar over Yosemite, or teleport across the globe.",
+                            category: "education",
+                            rating: 4.7,
+                            price: 0,
+                            platform: "Steam VR, Oculus Rift",
+                            officialUrl: "https://store.steampowered.com/app/348250/Google_Earth_VR/",
+                            videoUrl: "https://www.youtube.com/watch?v=SCrkZOx5Q1M",
+                            imageUrl: "https://images.unsplash.com/photo-1539650116574-75c0c6d73f6e?w=400&h=225&fit=crop",
+                            tags: ["geography", "exploration", "educational", "free"]
+                        },
+                        {
+                            title: "The Body VR: Journey Inside a Cell",
+                            description: "Travel through the bloodstream and discover how blood cells work to spread oxygen throughout the body.",
+                            category: "education",
+                            rating: 4.5,
+                            price: 0,
+                            platform: "Oculus Quest, Steam VR",
+                            officialUrl: "https://www.oculus.com/experiences/quest/1683790615039229/",
+                            videoUrl: "https://www.youtube.com/watch?v=kXqJmC_wWaE",
+                            imageUrl: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=225&fit=crop",
+                            tags: ["biology", "anatomy", "science", "free"]
+                        },
+                        {
+                            title: "Titans of Space PLUS",
+                            description: "Experience the true scale of our cosmic neighborhood. Visit moons, planets, and stars in our solar system and beyond.",
+                            category: "education",
+                            rating: 4.6,
+                            price: 9.99,
+                            platform: "Steam VR, Oculus Quest",
+                            officialUrl: "https://store.steampowered.com/app/468820/Titans_of_Space_PLUS/",
+                            videoUrl: "https://www.youtube.com/watch?v=keaOpjWJEQs",
+                            imageUrl: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=225&fit=crop",
+                            tags: ["astronomy", "space", "planets", "science"]
+                        },
+                        {
+                            title: "Anne Frank House VR",
+                            description: "Step inside the Secret Annex and explore the hiding place where Anne Frank wrote her famous diary during WWII.",
+                            category: "education",
+                            rating: 4.8,
+                            price: 0,
+                            platform: "Oculus Quest, Steam VR",
+                            officialUrl: "",
+                            videoUrl: "https://www.youtube.com/watch?v=YVoOHezGBuY",
+                            imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=225&fit=crop",
+                            tags: ["history", "educational", "memorial", "free"]
+                        },
+                        {
+                            title: "Labster VR",
+                            description: "Perform laboratory experiments in a risk-free virtual environment. Perfect for students learning chemistry, biology, and physics.",
+                            category: "education",
+                            rating: 4.3,
+                            price: 0,
+                            platform: "Oculus Quest, Educational Platforms",
+                            officialUrl: "https://www.labster.com/vr/",
+                            videoUrl: "https://www.youtube.com/watch?v=bM4_1wy_wSY",
+                            imageUrl: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=225&fit=crop",
+                            tags: ["chemistry", "laboratory", "experiments", "free"]
+                        }
+                    ],
+                    fitness: [
+                        {
+                            title: "FitXR",
+                            description: "Get fit with boxing, dance, and HIIT workouts in VR. Join live classes or work out solo with energizing music.",
+                            category: "fitness",
+                            rating: 4.6,
+                            price: 9.99,
+                            platform: "Oculus Quest, PSVR",
+                            officialUrl: "https://www.oculus.com/experiences/quest/2327205800645550/",
+                            videoUrl: "https://www.youtube.com/watch?v=eVRkEwVn2x8",
+                            imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=225&fit=crop",
+                            tags: ["boxing", "cardio", "workout", "fitness"]
+                        },
+                        {
+                            title: "Supernatural",
+                            description: "Work out to the beat in beautiful destinations around the world. Full-body workouts with real coaches and amazing music.",
+                            category: "fitness",
+                            rating: 4.8,
+                            price: 18.99,
+                            platform: "Oculus Quest",
+                            officialUrl: "https://www.oculus.com/experiences/quest/1830168170427369/",
+                            videoUrl: "https://www.youtube.com/watch?v=qGBAklkO_D8",
+                            imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=225&fit=crop",
+                            tags: ["fitness", "music", "workout", "subscription"]
+                        },
+                        {
+                            title: "Thrill of the Fight",
+                            description: "Room-scale VR boxing that lets you fight like a real boxer. Throw punches with real power and timing.",
+                            category: "fitness",
+                            rating: 4.7,
+                            price: 9.99,
+                            platform: "Steam VR, Oculus Quest",
+                            officialUrl: "https://store.steampowered.com/app/494150/The_Thrill_of_the_Fight__VR_Boxing/",
+                            videoUrl: "https://www.youtube.com/watch?v=3ILoGcSxCAc",
+                            imageUrl: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=225&fit=crop",
+                            tags: ["boxing", "fitness", "realistic", "cardio"]
+                        }
+                    ],
+                    entertainment: [
+                        {
+                            title: "Horizon Venues",
+                            description: "Attend live concerts, comedy shows, and events with friends in VR. Experience entertainment like never before.",
+                            category: "entertainment",
+                            rating: 4.3,
+                            price: 0,
+                            platform: "Meta Quest",
+                            officialUrl: "https://www.oculus.com/experiences/quest/2006739566067648/",
+                            videoUrl: "https://www.youtube.com/watch?v=YVoOHezGBuY",
+                            imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=225&fit=crop",
+                            tags: ["music", "concert", "live", "free"]
+                        }
+                    ],
+                    relaxation: [
+                        {
+                            title: "Guided Meditation VR",
+                            description: "Find tranquility in beautiful environments with guided meditation sessions and peaceful soundscapes.",
+                            category: "relaxation",
+                            rating: 4.5,
+                            price: 9.99,
+                            platform: "Steam VR, Oculus Quest",
+                            officialUrl: "https://store.steampowered.com/app/397750/Guided_Meditation_VR/",
+                            videoUrl: "https://www.youtube.com/watch?v=bM4_1wy_wSY",
+                            imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=225&fit=crop",
+                            tags: ["meditation", "zen", "peaceful", "wellness"]
+                        }
+                    ]
+                };
+            }
+
+            async generateSampleData() {
+                const sampleData = this.getSampleData();
+                const allExperiences = [
+                    ...sampleData.gaming.slice(0, 3),
+                    ...sampleData.education.slice(0, 3),
+                    ...sampleData.fitness.slice(0, 2),
+                    ...sampleData.entertainment.slice(0, 1),
+                    ...sampleData.relaxation.slice(0, 1)
+                ];
+
+                await this.generateExperiences(allExperiences, 'Mixed sample data');
+            }
+
+            async generateCategoryData(category, count) {
+                const sampleData = this.getSampleData();
+                const experiences = sampleData[category] ? sampleData[category].slice(0, count) : [];
+
+                if (experiences.length === 0) {
+                    this.showNotification(`No sample data available for ${category}`, 'warning');
+                    return;
+                }
+
+                await this.generateExperiences(experiences, `${category} experiences`);
+            }
+
+            async generateExperiences(experiences, description) {
+                if (experiences.length === 0) return;
+
+                try {
+                    const progressContainer = document.getElementById('generationProgress');
+                    const progressBar = document.getElementById('progressBar');
+                    const progressText = document.getElementById('progressText');
+
+                    progressContainer.classList.remove('hidden');
+                    progressBar.style.width = '0%';
+                    progressText.textContent = `Generating ${description}...`;
+
+                    for (let i = 0; i < experiences.length; i++) {
+                        const experience = {
+                            ...experiences[i],
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+
+                        await db.collection('vrExperiences').add(experience);
+
+                        const progress = ((i + 1) / experiences.length) * 100;
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `Generated ${i + 1} of ${experiences.length} experiences...`;
+
+                        // Small delay to show progress
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
+
+                    progressContainer.classList.add('hidden');
+                    await this.loadExperiences();
+                    this.showNotification(`Successfully generated ${experiences.length} ${description}!`, 'success');
+
+                } catch (error) {
+                    console.error('Error generating sample data:', error);
+                    document.getElementById('generationProgress').classList.add('hidden');
+                    this.showNotification('Error generating sample data: ' + error.message, 'error');
+                }
+            }
+
+            async clearAllData() {
+                if (!confirm('⚠️ WARNING: This will delete ALL VR experiences from the database. This action cannot be undone. Are you sure?')) {
+                    return;
+                }
+
+                if (!confirm('This is your final warning. All data will be permanently deleted. Continue?')) {
+                    return;
+                }
+
+                try {
+                    const progressContainer = document.getElementById('generationProgress');
+                    const progressBar = document.getElementById('progressBar');
+                    const progressText = document.getElementById('progressText');
+
+                    progressContainer.classList.remove('hidden');
+                    progressBar.style.width = '0%';
+                    progressText.textContent = 'Deleting all experiences...';
+
+                    const snapshot = await db.collection('vrExperiences').get();
+                    const totalDocs = snapshot.size;
+
+                    if (totalDocs === 0) {
+                        progressContainer.classList.add('hidden');
+                        this.showNotification('No experiences to delete', 'info');
+                        return;
+                    }
+
+                    let deletedCount = 0;
+                    const batch = db.batch();
+
+                    snapshot.forEach((doc) => {
+                        batch.delete(doc.ref);
+                    });
+
+                    await batch.commit();
+
+                    progressBar.style.width = '100%';
+                    progressText.textContent = `Deleted ${totalDocs} experiences`;
+
+                    setTimeout(() => {
+                        progressContainer.classList.add('hidden');
+                    }, 1000);
+
+                    await this.loadExperiences();
+                    this.showNotification(`Successfully deleted ${totalDocs} experiences`, 'success');
+
+                } catch (error) {
+                    console.error('Error clearing data:', error);
+                    document.getElementById('generationProgress').classList.add('hidden');
+                    this.showNotification('Error clearing data: ' + error.message, 'error');
+                }
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                let bgClass = 'bg-blue-500/90';
+
+                switch (type) {
+                    case 'error':
+                        bgClass = 'bg-red-500/90';
+                        break;
+                    case 'success':
+                        bgClass = 'bg-green-500/90';
+                        break;
+                    case 'warning':
+                        bgClass = 'bg-yellow-500/90';
+                        break;
+                }
+
+                notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg font-rajdhani font-semibold ${bgClass} text-white border border-white/20`;
+                notification.style.backdropFilter = 'blur(10px)';
+                notification.textContent = message;
+
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.firestoreAdmin = new FirestoreAdmin();
+
+            // Initialize Lucide icons
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+
+</html>
