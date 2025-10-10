@@ -214,24 +214,66 @@ class VRRecommenderApp {
     }
 
     initializeAuthButtons() {
-        const loginSubmit = document.getElementById('loginSubmit');
-        const signupSubmit = document.getElementById('signupSubmit');
+        // Main auth buttons
+        const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
-        const googleLoginBtn = document.getElementById('googleLoginBtn');
-        const googleSignupBtn = document.getElementById('googleSignupBtn');
+        
+        // Modal tab buttons
+        const loginTab = document.getElementById('loginTab');
+        const signupTab = document.getElementById('signupTab');
+        
+        // Form elements
+        const emailLoginForm = document.getElementById('emailLoginForm');
+        const emailSignupForm = document.getElementById('emailSignupForm');
+        
+        // Google Sign-In buttons
+        const googleSignInBtn = document.getElementById('googleSignInBtn');
+        const googleSignUpBtn = document.getElementById('googleSignUpBtn');
+        
+        // Email inputs for validation
         const loginEmail = document.getElementById('loginEmail');
         const signupEmail = document.getElementById('signupEmail');
 
-        if (loginSubmit) loginSubmit.addEventListener('click', () => this.handleLogin());
-        if (signupSubmit) signupSubmit.addEventListener('click', () => this.handleSignup());
-        if (logoutBtn) logoutBtn.addEventListener('click', () => this.handleLogout());
-        
-        // Google Sign-In buttons
-        if (googleLoginBtn) {
-            googleLoginBtn.addEventListener('click', () => this.handleGoogleSignIn());
+        // Main auth button events
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => showAuthModal());
         }
-        if (googleSignupBtn) {
-            googleSignupBtn.addEventListener('click', () => this.handleGoogleSignIn());
+        
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => this.handleLogout());
+        }
+        
+        // Modal tab events
+        if (loginTab) {
+            loginTab.addEventListener('click', () => showLoginForm());
+        }
+        
+        if (signupTab) {
+            signupTab.addEventListener('click', () => showSignupForm());
+        }
+        
+        // Form submission events
+        if (emailLoginForm) {
+            emailLoginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleEmailLogin();
+            });
+        }
+        
+        if (emailSignupForm) {
+            emailSignupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleEmailSignup();
+            });
+        }
+        
+        // Google Sign-In button events
+        if (googleSignInBtn) {
+            googleSignInBtn.addEventListener('click', () => this.handleGoogleSignIn());
+        }
+        
+        if (googleSignUpBtn) {
+            googleSignUpBtn.addEventListener('click', () => this.handleGoogleSignIn());
         }
 
         // Real-time email validation
@@ -394,7 +436,124 @@ class VRRecommenderApp {
     }
 
     showLoginPrompt() {
-        alert('Sign in to save favorites and get personalized recommendations!');
+        showAuthModal();
+    }
+
+    async handleEmailLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!email || !password) {
+            this.showError('Please fill in all fields');
+            return;
+        }
+        
+        showAuthLoading();
+        
+        try {
+            const result = await window.authManager.signIn(email, password);
+            
+            if (result.success) {
+                this.showSuccess(`Welcome back, ${email}!`);
+                closeAuthModal();
+                await this.loadUserFavorites();
+            } else {
+                this.showError(result.error || 'Login failed');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showError('Login failed. Please try again.');
+        } finally {
+            hideAuthLoading();
+        }
+    }
+
+    async handleEmailSignup() {
+        const email = document.getElementById('signupEmail').value;
+        const password = document.getElementById('signupPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (!email || !password || !confirmPassword) {
+            this.showError('Please fill in all fields');
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            this.showError('Passwords do not match');
+            return;
+        }
+        
+        if (password.length < 6) {
+            this.showError('Password must be at least 6 characters');
+            return;
+        }
+        
+        showAuthLoading();
+        
+        try {
+            const result = await window.authManager.signUp(email, password);
+            
+            if (result.success) {
+                this.showSuccess(`Account created successfully! Welcome, ${email}!`);
+                closeAuthModal();
+                await this.loadUserFavorites();
+            } else {
+                this.showError(result.error || 'Signup failed');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            this.showError('Signup failed. Please try again.');
+        } finally {
+            hideAuthLoading();
+        }
+    }
+
+    async handleGoogleSignIn() {
+        showAuthLoading();
+        
+        try {
+            const result = await window.authManager.signInWithGoogle();
+            
+            if (result.success) {
+                if (result.redirect) {
+                    // Redirect initiated, don't close modal yet
+                    this.showSuccess('Redirecting to Google...');
+                } else {
+                    // Popup succeeded
+                    const displayName = result.user.displayName || result.user.email;
+                    this.showSuccess(`Welcome, ${displayName}!`);
+                    closeAuthModal();
+                    await this.loadUserFavorites();
+                }
+            } else {
+                this.showError(result.error || 'Google Sign-In failed');
+            }
+        } catch (error) {
+            console.error('Google Sign-In error:', error);
+            this.showError('Google Sign-In failed. Please try again.');
+        } finally {
+            if (!result || !result.redirect) {
+                hideAuthLoading();
+            }
+        }
+    }
+
+    async handleLogout() {
+        try {
+            const result = await window.authManager.signOut();
+            
+            if (result.success) {
+                this.showSuccess('Logged out successfully');
+                this.userFavorites = [];
+                // Refresh the display to remove favorite buttons
+                this.performSearch();
+            } else {
+                this.showError('Logout failed');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            this.showError('Logout failed. Please try again.');
+        }
     }
 
     showLoading(show) {
@@ -1355,6 +1514,86 @@ class VRRecommenderApp {
                 }
             }, 300);
         }, duration);
+    }
+}
+
+// Authentication Modal Functions
+function showAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Reset to login tab
+        showLoginForm();
+    }
+}
+
+function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+function showLoginForm() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    
+    if (loginForm && signupForm && loginTab && signupTab) {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        
+        loginTab.classList.add('bg-neon-blue', 'text-black');
+        loginTab.classList.remove('text-gray-400');
+        
+        signupTab.classList.remove('bg-neon-blue', 'text-black');
+        signupTab.classList.add('text-gray-400');
+    }
+}
+
+function showSignupForm() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    
+    if (loginForm && signupForm && loginTab && signupTab) {
+        loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
+        
+        signupTab.classList.add('bg-neon-blue', 'text-black');
+        signupTab.classList.remove('text-gray-400');
+        
+        loginTab.classList.remove('bg-neon-blue', 'text-black');
+        loginTab.classList.add('text-gray-400');
+    }
+}
+
+function showAuthLoading() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const authLoading = document.getElementById('authLoading');
+    
+    if (loginForm && signupForm && authLoading) {
+        loginForm.classList.add('hidden');
+        signupForm.classList.add('hidden');
+        authLoading.classList.remove('hidden');
+    }
+}
+
+function hideAuthLoading() {
+    const authLoading = document.getElementById('authLoading');
+    if (authLoading) {
+        authLoading.classList.add('hidden');
+    }
+    
+    // Show the appropriate form based on current tab
+    const loginTab = document.getElementById('loginTab');
+    if (loginTab && loginTab.classList.contains('bg-neon-blue')) {
+        showLoginForm();
+    } else {
+        showSignupForm();
     }
 }
 
